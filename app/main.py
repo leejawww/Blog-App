@@ -1,17 +1,8 @@
-# print("hello")
-# print("world")
-
-
 from fastapi import FastAPI
+from .routers.blog_routers import blog_routers
+from .routers.user_routers import user_routers
 
 app = FastAPI()
 
-
-@app.get("/")
-async def hello():
-    return {"message": "hello"}
-
-
-@app.post("/")
-async def hi():
-    return "hi"
+app.include_router(user_routers)
+app.include_router(blog_routers)
