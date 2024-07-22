@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "title": "python",
+        "content": "annanananananan",
+        "author_id": "2",
+        "author_name": "ram",
+        "published_on": "2018"
+    },
+    {
+        "id": 2,
+        "title": "java",
+        "content": "lalalalalalalala",
+        "author_id": "3",
+        "author_name": "laxman",
+        "published_on": "2020"
+    },
+    {
+        "id": 3,
+        "title": "html",
+        "content": "ahahahahahahhahah",
+        "author_id": "1",
+        "author_name": "lijah",
+        "published_on": "2022"
+    },
+    {
+        "id": 4,
+        "title": "string",
+        "content": "string",
+        "author_id": 0,
+        "author_name": "string",
+        "published_on": "string"
+    },
+    {
+        "id": 5,
+        "title": "string",
+        "content": "string",
+        "author_id": 0,
+        "author_name": "string",
+        "published_on": "string"
+    },
+    {
+        "id": 6,
+        "title": "computer",
+        "content": "sahahahahahahahatring",
+        "author_id": 0,
+        "author_name": "string",
+        "published_on": "string"
+    }
+]
