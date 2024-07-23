@@ -3,7 +3,7 @@ from app.schemas.user_schemas import UserCreate
 import json
 import os
 
-user_routers = APIRouter()
+user_router = APIRouter()
 
 Data_file = "/Users/lijahbabugongal/blog_app/app/database/user_data.json"
 
@@ -21,7 +21,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
-@user_routers.post("/login", tags=["USER"])
+@user_router.post("/create_user", tags=["USER"])
 def create_user(user: UserCreate):
     data = load_data()
     if any(p["id"] == user.id for p in data):
@@ -31,7 +31,7 @@ def create_user(user: UserCreate):
     return user
 
 
-@user_routers.get("/login/view/{id}", tags=["USER"])
+@user_router.get("/user/view/{id}", tags=["USER"])
 def view_user(id: int):
     data = load_data()
     if id < 1 or id > len(data):
@@ -40,7 +40,7 @@ def view_user(id: int):
     return data[id]
 
 
-@user_routers.delete("/login/remove/{id}", tags=["USER"])
+@user_router.delete("/user/remove/{id}", tags=["USER"])
 def remove_user(id: int):
     data = load_data()
     if id < 1 or id > len(data):

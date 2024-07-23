@@ -4,7 +4,7 @@ import json
 import os
 
 
-blog_routers = APIRouter()
+blog_router = APIRouter()
 
 Data_file = "/Users/lijahbabugongal/blog_app/app/database/blog_data.json"
 
@@ -22,7 +22,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
-@blog_routers.post("/blog", tags=["BLOG"])
+@blog_router.post("/blog", tags=["BLOG"])
 def create_blog(blog: BlogCreate):
     data = load_data()
     if any(p["id"] == blog.id for p in data):
@@ -32,12 +32,12 @@ def create_blog(blog: BlogCreate):
     return blog
 
 
-@blog_routers.get("/view_blogs/", tags=["BLOG"])
+@blog_router.get("/view_blogs/", tags=["BLOG"])
 def read_all_blog():
     return load_data()
 
 
-@blog_routers.get("/view_blogs/{id}", tags=["BLOG"])
+@blog_router.get("/view_blogs/{id}", tags=["BLOG"])
 def read_blog(id: int):
     data = load_data()
     if id < 1 or id > len(data):
@@ -46,7 +46,7 @@ def read_blog(id: int):
     return data[id]
 
 
-@blog_routers.put("/view_blogs/edit/{id}", tags=["BLOG"])
+@blog_router.put("/view_blogs/edit/{id}", tags=["BLOG"])
 def edit_blog(id: int, blog: BlogCreate):
     data = load_data()
     if id < 1 or id > len(data):
@@ -56,7 +56,7 @@ def edit_blog(id: int, blog: BlogCreate):
     return blog
 
 
-@blog_routers.delete("/view_blogs/remove/{id}", tags=["BLOG"])
+@blog_router.delete("/view_blogs/remove/{id}", tags=["BLOG"])
 def remove_blog(id: int):
     data = load_data()
     if id < 1 or id > len(data):
