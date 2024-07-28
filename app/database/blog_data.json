@@ -46,5 +46,13 @@
         "author_id": 0,
         "author_name": "string",
         "published_on": "string"
+    },
+    {
+        "id": 0,
+        "title": "string",
+        "content": "string",
+        "author_id": 0,
+        "author_name": "string",
+        "published_on": "string"
     }
 ]

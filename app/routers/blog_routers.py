@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.schemas.blog_schemas import BlogCreate
+from app.routers.auth_routers import JWTBearer
 import json
 import os
 
@@ -22,7 +23,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
-@blog_router.post("/blog", tags=["BLOG"])
+@blog_router.post("/blog", dependencies=[Depends(JWTBearer())], tags=["BLOG"])
 def create_blog(blog: BlogCreate):
     data = load_data()
     if any(p["id"] == blog.id for p in data):

@@ -21,7 +21,7 @@ def save_data(data):
         json.dump(data, f, indent=4)
 
 
-@user_router.post("/create_user", tags=["USER"])
+@user_router.post("/user/create", tags=["USER"])
 def create_user(user: UserCreate):
     data = load_data()
     if any(p["id"] == user.id for p in data):

@@ -1,129 +1,88 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt, JWTError
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
-from app.schemas.auth_schemas import User, UserInDB, Token, TokenData
-from typing import Annotated, Optional
-import os
-import json
+from fastapi import Request, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Dict
+from fastapi import APIRouter, Body
+from app.models.auth_models import UserSchema, UserLoginSchema
+import jwt
+import time
 
 
-SECRET_KEY = "6c306177c9656f64ac0a05f572eed2887a71976853fcc47ccd6875be260f6b46"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
+auth_router = APIRouter(tags=["AUTH"])
 Data_file = "/Users/lijahbabugongal/blog_app/app/database/auth_data.json"
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+JWT_SECRET = "6c306177c9656f64ac0a05f572eed2887a71976853fcc47ccd6875be260f6b46"
+JWT_ALGORITHM = "HS256"
 
 
-auth_router = APIRouter(prefix="/auth", tags=["AUTHENTICATION"])
+def token_response(token: str):
+    return {"access_token": token}
 
 
-def load_data():
-    if not os.path.exists(Data_file):
-        with open(Data_file, "w") as f:
-            json.dump({}, f)
-    with open(Data_file, "r") as f:
-        return json.load(f)
+def signJWT(user_id: str) -> Dict[str, str]:
+    payload = {"user_id": user_id, "expires": time.time() + 600}
+    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM).decode("utf-8")
+    return token_response(token)
 
 
-def save_data(data):
-    with open(Data_file, "w") as f:
-        json.dump(data, f, indent=4)
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
-
-
-def get_user(db, username: str) -> Optional[UserInDB]:
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
-    return None
-
-
-def authenticate_user(db, username: str, password: str) -> Optional[UserInDB]:
-    user = get_user(db, username)
-    if not user:
-        return None
-    if not verify_password(password, user.hashed_password):
-        return None
-    return user
-
-
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserInDB:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def decodeJWT(token: str) -> Dict:
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: Optional[str] = payload.get("sub")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-    db = load_data()
-    user = get_user(db, username=token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
+        decode_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return dict(decode_token) if decode_token["expires"] >= time.time() else {}
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+        return {}
 
 
-@auth_router.post("/register")
-async def register_user(user: User):
-    db = load_data()
-    if user.username in db:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    hashed_password = get_password_hash(user.password)
-    user_in_db = UserInDB(
-        username=user.username, hashed_password=hashed_password, password=user.password
-    )
-    db.append(user_in_db.model_dump())
-    save_data(db)
-    return {"message": "User registered successfully"}
+class JWTBearer(HTTPBearer):
+    def __init__(self, auto_error: bool = True):
+        super(JWTBearer, self).__init__(auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials:
+        credentials: HTTPAuthorizationCredentials | None = await super(
+            JWTBearer, self
+        ).__call__(request)
+        if credentials is None:
+            raise HTTPException(status_code=403, detail="Invalid authorization code.")
+        if credentials.scheme != "Bearer":
+            raise HTTPException(
+                status_code=403, detail="Invalid authentication scheme."
+            )
+        if not self.verify_jwt(credentials.credentials):
+            raise HTTPException(
+                status_code=403, detail="Invalid token or expired token."
+            )
+        return credentials
+
+    def verify_jwt(self, jwtoken: str) -> bool:
+        isTokenValid: bool = False
+
+        try:
+            payload = decodeJWT(jwtoken)
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            payload = {}
+        if payload:
+            isTokenValid = True
+        return isTokenValid
 
 
-@auth_router.post("/token", response_model=Token)
-async def access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    db = load_data()
-    user = authenticate_user(db, form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+users = []
 
 
-@auth_router.get("/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_user)],
-):
-    return current_user
+def check_user(data: UserLoginSchema):
+    for user in users:
+        if user.email == data.email and user.password == data.password:
+            return True
+    return False
+
+
+@auth_router.post("/user/signup")
+def create_user(user: UserSchema = Body(...)):
+    users.append(user)
+    return signJWT(user.email)
+
+
+@auth_router.post("/user/login")
+def user_login(user: UserLoginSchema = Body(...)):
+    if check_user(user):
+        return signJWT(user.email)
+    return {"error": "Wrong login details!"}
