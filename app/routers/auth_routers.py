@@ -5,14 +5,13 @@ from fastapi import APIRouter, Body
 from app.models.auth_models import UserSchema, UserLoginSchema
 import jwt
 import time
-
+from decouple import config
 
 auth_router = APIRouter(tags=["AUTH"])
 Data_file = "/Users/lijahbabugongal/blog_app/app/database/auth_data.json"
 
-
-JWT_SECRET = "6c306177c9656f64ac0a05f572eed2887a71976853fcc47ccd6875be260f6b46"
-JWT_ALGORITHM = "HS256"
+SECRET = config("JWT_SECRET")
+ALGORITHM = config("JWT_ALGORITHM")
 
 
 def token_response(token: str):
@@ -21,13 +20,13 @@ def token_response(token: str):
 
 def signJWT(user_id: str) -> Dict[str, str]:
     payload = {"user_id": user_id, "expires": time.time() + 600}
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM).decode("utf-8")
+    token = jwt.encode(payload, SECRET, algorithm=ALGORITHM).decode("utf-8")  # type: ignore
     return token_response(token)
 
 
 def decodeJWT(token: str) -> Dict:
     try:
-        decode_token = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        decode_token = jwt.decode(token, SECRET, algorithms=[ALGORITHM])  # type: ignore
         return dict(decode_token) if decode_token["expires"] >= time.time() else {}
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return {}
