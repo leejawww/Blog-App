@@ -10,8 +10,8 @@ from decouple import config
 auth_router = APIRouter(tags=["AUTH"])
 Data_file = "/Users/lijahbabugongal/blog_app/app/database/auth_data.json"
 
-SECRET = config("JWT_SECRET")
-ALGORITHM = config("JWT_ALGORITHM")
+SECRET = str(config("JWT_SECRET"))
+ALGORITHM = str(config("JWT_ALGORITHM"))
 
 
 def token_response(token: str):
@@ -20,13 +20,13 @@ def token_response(token: str):
 
 def signJWT(user_id: str) -> Dict[str, str]:
     payload = {"user_id": user_id, "expires": time.time() + 600}
-    token = jwt.encode(payload, SECRET, algorithm=ALGORITHM).decode("utf-8")  # type: ignore
+    token = jwt.encode(payload, SECRET, algorithm=ALGORITHM).decode("utf-8")
     return token_response(token)
 
 
 def decodeJWT(token: str) -> Dict:
     try:
-        decode_token = jwt.decode(token, SECRET, algorithms=[ALGORITHM])  # type: ignore
+        decode_token = jwt.decode(token, SECRET, algorithms=[ALGORITHM])
         return dict(decode_token) if decode_token["expires"] >= time.time() else {}
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return {}
