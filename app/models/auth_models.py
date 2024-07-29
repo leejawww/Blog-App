@@ -1,12 +1,8 @@
-from pydantic import BaseModel, Field, EmailStr
+from sqlmodel import SQLModel, Field
 
 
-class UserSchema(BaseModel):
-    username: str = Field(...)
-    email: EmailStr = Field(...)
-    password: str = Field(...)
-
-
-class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(...)
-    password: str = Field(...)
+class AuthUser(SQLModel, table=True):
+    # username: str = Field()
+    id: int = Field(primary_key=True)
+    email: str = Field()
+    password: str = Field()

@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -7,4 +8,4 @@ class BlogCreate(BaseModel):
     content: str
     author_id: int
     author_name: str
-    published_on: str
+    published_on: datetime

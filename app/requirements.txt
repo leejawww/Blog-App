@@ -1,5 +1,7 @@
+alembic
 fastapi
-uvicorn
 pydantic
+pyjwt
+sqlalchemy
 sqlmodel
-PyJWT
+uvicorn
