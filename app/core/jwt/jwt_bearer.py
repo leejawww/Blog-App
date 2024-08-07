@@ -1,18 +1,10 @@
 from fastapi import Request, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict
-from fastapi import APIRouter, Body  # , Depends
-from app.models.auth_models import AuthUser
-
-# from app.schemas.auth_schemas import AuthUserCreate
 import jwt
 import time
 from decouple import config
-# from sqlalchemy.orm import Session
-# from app.database.database import get_db
 
-auth_router = APIRouter(tags=["AUTH"])
-Data_file = "/Users/lijahbabugongal/blog_app/app/database/auth_data.json"
 
 SECRET = str(config("JWT_SECRET"))
 ALGORITHM = str(config("JWT_ALGORITHM"))
@@ -66,35 +58,3 @@ class JWTBearer(HTTPBearer):
         if payload:
             isTokenValid = True
         return isTokenValid
-
-
-users = []
-
-
-def check_user(data: AuthUser):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-    return False
-
-
-# @auth_router.post("/user/signup", response_model=AuthUserCreate)
-# def create_user(user: AuthUserCreate, db: Session = Depends(get_db)):
-#     new_user = AuthUser(**user.model_dump())
-#     db.add(new_user)
-#     db.commit()
-#     db.refresh(new_user)
-#     return signJWT(new_user.email)
-
-
-@auth_router.post("/user/signup")
-def create_user(user: AuthUser):
-    users.append(user)
-    return signJWT(user.email)
-
-
-@auth_router.post("/user/login")
-def user_login(user: AuthUser = Body(...)):
-    if check_user(user):
-        return signJWT(user.email)
-    return {"error": "Wrong login details!"}
