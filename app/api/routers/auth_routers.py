@@ -3,7 +3,7 @@ from app.infrastructure.models.auth_models import AuthUser
 from app.core.jwt.jwt_bearer import signJWT
 # from app.api.schemas.auth_schemas import AuthUserCreate
 # from sqlalchemy.orm import Session
-# from app.database.database import get_db
+# from app.core.database import get_db
 
 auth_router = APIRouter(tags=["AUTH"])
 
@@ -19,11 +19,12 @@ def check_user(data: AuthUser):
 
 
 # @auth_router.post("/user/signup", response_model=AuthUserCreate)
-# def create_user(user: AuthUserCreate, db: Session = Depends(get_db)):
+# def create_user(user: AuthUser, db: Session = Depends(get_db)):
 #     new_user = AuthUser(**user.model_dump())
 #     db.add(new_user)
 #     db.commit()
 #     db.refresh(new_user)
+
 #     return signJWT(new_user.email)
 
 
