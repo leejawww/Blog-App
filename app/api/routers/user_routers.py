@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from app.infrastructure.models.user_models import User
 from app.api.schemas.user_schemas import UserCreate
 from app.core.jwt.jwt_bearer import JWTBearer
+
+# from app.controllers.user_controller import UserControl
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 import json
@@ -38,6 +40,14 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
+# def create_user(
+#     user: UserCreate,
+#     db: Session = Depends(get_db),
+#     user_control: UserControl = Depends(),
+# ):
+#     return user_control.create(user)
+
+
 @user_router.get(
     "/user/view/{id}", dependencies=[Depends(JWTBearer())], response_model=UserCreate
 )
@@ -55,3 +65,9 @@ def remove_user(id: int):
     data.pop(id - 1)
     save_data(data)
     return "User removed successfully"
+
+
+# def remove_user(
+#     id: int, user_control: UserControl = Depends(), db: Session = Depends(get_db)
+# ):
+#     return user_control.delete(id)

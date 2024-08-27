@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from app.api.v1.blog_routers import blog_router
-from app.api.v1.user_routers import user_router
-from app.api.v1.auth_routers import auth_router
+from app.api.routers.blog_routers import blog_router
+from app.api.routers.user_routers import user_router
+from app.api.routers.auth_routers import auth_router
 
 
 app = FastAPI(description="Blog Application")
